@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GMN CAR TRADING — Premium Pre-Owned Vehicles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+<style>
+  :root{
+    --black-deep:#0B0B0B;
+    --black-matte:#161616;
+    --black-card:#1D1D1D;
+    --red:#E10600;
+    --red-dim:#a80400;
+    --white:#FFFFFF;
+    --silver:#BFC3C7;
+    --line: rgba(191,195,199,0.15);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--black-deep);
+    color:var(--white);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3, .display{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:0.02em;
+  }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:'Inter', sans-serif; cursor:pointer; border:none; }
+  img{ max-width:100%; display:block; }
+  ::selection{ background:var(--red); color:var(--white); }
+
+  /* ---------- Loading screen ---------- */
+  #loader{
+    position:fixed; inset:0; z-index:999;
+    background:var(--black-deep);
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    transition:opacity .5s ease, visibility .5s ease;
+  }
+  #loader .mark{
+    width:64px; height:64px; border:3px solid var(--line);
+    border-top-color:var(--red); border-radius:50%;
+    animation:spin 0.9s linear infinite;
+  }
+  #loader .word{ font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:0.35em; margin-top:22px; color:var(--silver); }
+  #loader.hide{ opacity:0; visibility:hidden; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* ---------- Nav ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:100;
+    background:rgba(22,22,22,0.65);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 5vw;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Bebas Neue', sans-serif; font-size:22px; letter-spacing:0.08em;
+  }
+  .logo .box{
+    width:34px; height:34px; background:var(--red);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--white);
+  }
+  nav.links{ display:flex; gap:34px; }
+  nav.links a{
+    font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:var(--silver);
+    padding-bottom:4px; border-bottom:2px solid transparent; transition:color .2s, border-color .2s;
+  }
+  nav.links a:hover, nav.links a.active{ color:var(--white); border-color:var(--red); }
+  #navToggle{ display:none; background:none; color:var(--white); font-size:24px; }
+
+  /* ---------- Page sections ---------- */
+  .page{ display:none; }
+  .page.active{ display:block; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative; min-height:88vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    padding:40px 6vw; overflow:hidden;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(225,6,0,0.14), transparent 55%),
+      radial-gradient(ellipse at 75% 80%, rgba(191,195,199,0.08), transparent 50%),
+      linear-gradient(180deg, var(--black-deep), var(--black-matte));
+  }
+  .hero::after{
+    content:""; position:absolute; inset:0;
+    background-image:repeating-linear-gradient(115deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 60px);
+    animation:drift 14s linear infinite;
+  }
+  @keyframes drift{ from{ background-position:0 0; } to{ background-position:600px 0; } }
+  .hero .logo-big{
+    width:auto; height:78px; margin-bottom:30px; position:relative; z-index:1;
+  }
+  .hero h1{ font-size:clamp(48px, 9vw, 108px); line-height:0.95; position:relative; z-index:1; }
+  .hero h2{ font-size:clamp(18px, 2.6vw, 26px); color:var(--silver); font-family:'Inter',sans-serif; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; margin-top:12px; position:relative; z-index:1; }
+  .hero .supporting{ margin-top:16px; color:var(--silver); font-size:14px; letter-spacing:0.04em; position:relative; z-index:1; }
+  .hero .ctas{ margin-top:38px; display:flex; gap:16px; flex-wrap:wrap; justify-content:center; position:relative; z-index:1; }
+  .btn{
+    padding:15px 34px; font-size:13px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700;
+    transition:transform .2s ease, background .2s ease, color .2s ease;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn-fill{ background:var(--red); color:var(--white); }
+  .btn-fill:hover{ background:var(--red-dim); }
+  .btn-outline{ background:transparent; color:var(--white); border:1.5px solid var(--silver); }
+  .btn-outline:hover{ border-color:var(--white); }
+
+  /* ---------- Section shell ---------- */
+  section{ padding:80px 6vw; }
+  .section-head{ margin-bottom:40px; }
+  .eyebrow{ color:var(--red); font-size:12px; letter-spacing:0.3em; text-transform:uppercase; margin-bottom:10px; font-weight:700; }
+  .section-head h2{ font-size:clamp(32px,4.5vw,54px); }
+
+  /* ---------- Filters ---------- */
+  .filters{
+    display:flex; flex-wrap:wrap; gap:12px; margin-bottom:36px;
+    background:var(--black-matte); border:1px solid var(--line); padding:18px;
+  }
+  .filters input, .filters select{
+    background:var(--black-card); border:1px solid var(--line); color:var(--white);
+    padding:11px 14px; font-size:13px; font-family:'Inter',sans-serif; min-width:150px;
+  }
+  .filters input::placeholder{ color:var(--silver); }
+  .filters select{ cursor:pointer; }
+
+  /* ---------- Inventory grid ---------- */
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:26px; }
+  .card{
+    background:var(--black-card); border:1px solid var(--line); overflow:hidden;
+    transition:border-color .25s, transform .25s;
+  }
+  .card:hover{ border-color:var(--red); transform:translateY(-4px); }
+  .card .thumb{
+    aspect-ratio:1/1; height:auto; background:linear-gradient(160deg, var(--black-matte), var(--black-deep));
+    display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--line);
+    position:relative;
+  }
+  .card .thumb svg{ width:70%; stroke:var(--silver); }
+  .card .thumb .tag{
+    position:absolute; top:12px; left:12px; background:var(--red); color:var(--white);
+    font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:4px 9px; font-weight:700;
+  }
+  .card .body{ padding:20px 20px 24px; }
+  .card .name{ font-family:'Bebas Neue',sans-serif; font-size:23px; letter-spacing:0.02em; margin-bottom:12px; }
+  .card .meta{ display:flex; flex-wrap:wrap; gap:8px 16px; color:var(--silver); font-size:12.5px; margin-bottom:16px; }
+  .card .meta span{ display:flex; align-items:center; gap:5px; }
+  .card .meta span::before{ content:"—"; color:var(--red); }
+  .card .price{ font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--white); margin-bottom:16px; }
+  .card .price small{ font-family:'Inter',sans-serif; color:var(--silver); font-size:11px; letter-spacing:0.08em; }
+  .card .view-btn{
+    width:100%; padding:12px; background:transparent; border:1.5px solid var(--red); color:var(--white);
+    font-size:12px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; transition:background .2s;
+  }
+  .card .view-btn:hover{ background:var(--red); }
+  .empty-msg{ color:var(--silver); padding:40px 0; text-align:center; }
+
+  /* ---------- Vehicle detail ---------- */
+  .detail-back{ color:var(--silver); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:24px; display:inline-block; }
+  .detail-back:hover{ color:var(--red); }
+  .detail-grid{ display:grid; grid-template-columns:1.15fr 0.85fr; gap:48px; }
+  @media (max-width:900px){ .detail-grid{ grid-template-columns:1fr; } }
+  .gallery-main{
+    aspect-ratio:1/1; height:auto; background:linear-gradient(160deg, var(--black-matte), var(--black-deep));
+    border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+  }
+  .gallery-main svg{ width:55%; stroke:var(--silver); }
+  .gallery-count{
+    position:absolute; bottom:12px; right:12px; background:rgba(11,11,11,0.75); color:var(--white);
+    font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:8px 12px; border:1px solid var(--line);
+  }
+  .thumb-strip{ display:flex; gap:8px; margin-top:10px; overflow-x:auto; padding-bottom:4px; }
+  .thumb-strip img{
+    width:64px; height:64px; object-fit:contain; background:var(--black-matte); flex:0 0 auto; cursor:pointer;
+    border:1px solid var(--line); opacity:0.75; transition:opacity .2s, border-color .2s;
+  }
+  .thumb-strip img:hover{ opacity:1; border-color:var(--red); }
+  .gallery-note{ margin-top:10px; font-size:11.5px; color:var(--silver); letter-spacing:0.02em; }
+
+  /* ---------- Lightbox ---------- */
+  #lightbox{
+    display:none; position:fixed; inset:0; z-index:500; background:rgba(11,11,11,0.96);
+    align-items:center; justify-content:center; flex-direction:column; padding:24px;
+  }
+  #lightbox.open{ display:flex; }
+  #lightbox .lb-stage{ position:relative; width:100%; max-width:640px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; background:var(--black-matte); border:1px solid var(--line); }
+  #lightbox img.lb-main{ max-width:100%; max-height:100%; object-fit:contain; }
+  #lightbox .lb-close{
+    position:absolute; top:-6px; right:0; background:none; color:var(--white); font-size:28px; line-height:1;
+    padding:8px 12px;
+  }
+  #lightbox .lb-close:hover{ color:var(--red); }
+  #lightbox .lb-arrow{
+    position:absolute; top:50%; transform:translateY(-50%); background:rgba(11,11,11,0.7); color:var(--white);
+    border:1px solid var(--line); font-size:22px; padding:10px 16px;
+  }
+  #lightbox .lb-arrow:hover{ border-color:var(--red); color:var(--red); }
+  #lightbox .lb-prev{ left:0; }
+  #lightbox .lb-next{ right:0; }
+  #lightbox .lb-counter{ margin-top:14px; color:var(--silver); font-size:12.5px; letter-spacing:0.06em; }
+  #lightbox .lb-thumbs{ display:flex; gap:8px; margin-top:16px; max-width:640px; overflow-x:auto; padding-bottom:4px; }
+  #lightbox .lb-thumbs img{
+    width:60px; height:60px; object-fit:contain; background:var(--black-matte); flex:0 0 auto; cursor:pointer; opacity:0.55;
+    border:2px solid transparent; transition:opacity .2s, border-color .2s;
+  }
+  #lightbox .lb-thumbs img.active{ opacity:1; border-color:var(--red); }
+  @media (max-width:700px){
+    #lightbox .lb-arrow{ font-size:18px; padding:8px 10px; }
+    #lightbox .lb-stage{ max-width:100%; }
+  }
+  .detail-name{ font-family:'Bebas Neue',sans-serif; font-size:42px; line-height:1; margin-bottom:8px; }
+  .detail-meta{ color:var(--silver); font-size:13px; margin-bottom:22px; letter-spacing:0.03em; }
+  .detail-price{ font-family:'Bebas Neue',sans-serif; font-size:44px; color:var(--red); margin-bottom:22px; }
+  .spec-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; padding:20px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-bottom:26px; }
+  .spec-row div span{ display:block; }
+  .spec-row .l{ font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--silver); margin-bottom:3px; }
+  .spec-row .v{ font-size:14px; font-weight:600; }
+  .block-title{ font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.05em; margin:26px 0 12px; color:var(--white); }
+  ul.feature-list{ list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:9px 18px; }
+  ul.feature-list li{ font-size:13.5px; color:var(--silver); padding-left:16px; position:relative; }
+  ul.feature-list li::before{ content:"—"; position:absolute; left:0; color:var(--red); }
+  table.financing{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.financing th, table.financing td{ text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); color:var(--silver); }
+  table.financing th{ color:var(--white); text-transform:uppercase; font-size:11px; letter-spacing:0.08em; }
+  table.financing td:last-child, table.financing th:last-child{ text-align:right; color:var(--white); }
+
+  .sticky-inquire{
+    position:sticky; bottom:0; margin-top:36px; background:var(--black-matte); border:1px solid var(--line);
+    padding:18px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+  }
+  .contact-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .icon-btn{
+    padding:12px 18px; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; font-weight:700;
+    background:var(--black-card); border:1px solid var(--line); color:var(--white); transition:border-color .2s, color .2s;
+  }
+  .icon-btn:hover{ border-color:var(--red); color:var(--red); }
+
+  /* ---------- About ---------- */
+  .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:center; }
+  @media (max-width:800px){ .about-grid{ grid-template-columns:1fr; } }
+  .about-grid p{ color:var(--silver); line-height:1.85; font-size:14.5px; margin-bottom:14px; }
+  .stat-row{ display:flex; gap:36px; margin-top:26px; flex-wrap:wrap; }
+  .stat-row div{ }
+  .stat-row .num{ font-family:'Bebas Neue',sans-serif; font-size:38px; color:var(--red); }
+  .stat-row .lbl{ font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--silver); }
+  .pillar-card{ background:var(--black-card); border:1px solid var(--line); padding:22px; margin-bottom:14px; }
+  .pillar-card h3{ font-family:'Bebas Neue',sans-serif; font-size:19px; margin-bottom:6px; }
+  .pillar-card p{ font-size:13px; color:var(--silver); margin:0; }
+
+  /* ---------- Contact ---------- */
+  .contact-grid{ display:grid; grid-template-columns:1fr 1fr; gap:48px; }
+  @media (max-width:900px){ .contact-grid{ grid-template-columns:1fr; } }
+  .form-field{ margin-bottom:16px; }
+  .form-field label{ display:block; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--silver); margin-bottom:6px; }
+  .form-field input, .form-field select, .form-field textarea{
+    width:100%; background:var(--black-card); border:1px solid var(--line); color:var(--white);
+    padding:12px 14px; font-family:'Inter',sans-serif; font-size:13.5px;
+  }
+  .form-field textarea{ min-height:110px; resize:vertical; }
+  .submit-btn{ padding:14px 30px; background:var(--red); color:var(--white); font-size:12.5px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; }
+  .submit-btn:hover{ background:var(--red-dim); }
+  .form-note{ font-size:12px; color:var(--silver); margin-top:12px; }
+  .map-box{ height:220px; background:var(--black-card); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--silver); font-size:12.5px; letter-spacing:0.05em; text-align:center; padding:20px; margin-bottom:24px; }
+  .info-block{ margin-bottom:22px; }
+  .info-block h3{ font-family:'Bebas Neue',sans-serif; font-size:18px; margin-bottom:8px; }
+  .info-block p{ color:var(--silver); font-size:13.5px; line-height:1.7; }
+  .social-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .social-row a{ padding:10px 16px; border:1px solid var(--line); font-size:12px; letter-spacing:0.05em; text-transform:uppercase; }
+  .social-row a:hover{ border-color:var(--red); color:var(--red); }
+
+  /* ---------- Footer ---------- */
+  footer{
+    border-top:1px solid var(--line); background:var(--black-matte); padding:56px 6vw 30px;
+  }
+  .footer-top{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:40px; margin-bottom:40px; }
+  .footer-brand .logo{ margin-bottom:14px; }
+  .footer-brand p{ color:var(--silver); font-size:13px; max-width:280px; line-height:1.7; }
+  .footer-cols{ display:flex; gap:60px; flex-wrap:wrap; }
+  .footer-col h4{ font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--silver); margin-bottom:14px; }
+  .footer-col a{ display:block; font-size:13.5px; color:var(--white); margin-bottom:10px; }
+  .footer-col a:hover{ color:var(--red); }
+  .footer-bottom{
+    border-top:1px solid var(--line); padding-top:22px; display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px;
+    color:var(--silver); font-size:11.5px; letter-spacing:0.03em;
+  }
+
+  @media (max-width:760px){
+    nav.links{ display:none; }
+    #navToggle{ display:block; }
+    .spec-row, ul.feature-list{ grid-template-columns:1fr; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hero::after{ animation:none; } .card{ transition:none; } #loader .mark{ animation:none; }
+  }
+</style>
+
+
+  /* ---------- Dynamic-site additions ---------- */
+  .loading-row{ padding:60px 0; text-align:center; color:var(--silver); font-size:13px; letter-spacing:0.05em; }
+  .spinner{
+    width:34px; height:34px; border:3px solid var(--line); border-top-color:var(--red); border-radius:50%;
+    animation:spin 0.9s linear infinite; margin:0 auto 14px;
+  }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+  .conn-error{
+    background:var(--black-card); border:1px solid var(--red); padding:18px 20px; color:var(--silver);
+    font-size:13px; line-height:1.7; margin-bottom:30px;
+  }
+  .conn-error strong{ color:var(--white); }
+</style>
+</head>
+<body>
+
+<div id="loader">
+  <div class="mark"></div>
+  <div class="word">GMN CAR TRADING</div>
+</div>
+
+<header class="nav">
+  <div class="logo"><img src="logo.jpg" alt="GMN Car Trading" style="height:34px;width:auto;"> CAR TRADING</div>
+  <nav class="links" id="navLinks">
+    <a href="#" data-page="home" class="active">Home</a>
+    <a href="#" data-page="inventory">Inventory</a>
+    <a href="#" data-page="financing">Financing</a>
+    <a href="#" data-page="about">About Us</a>
+    <a href="#" data-page="contact">Contact</a>
+  </nav>
+  <button id="navToggle">☰</button>
+</header>
+
+<!-- ============ HOME ============ -->
+<div class="page active" id="page-home">
+  <section class="hero" style="padding-top:0;">
+    <img class="logo-big" src="logo.jpg" alt="GMN Car Trading" style="background:none; object-fit:contain;">
+    <h1>GMN CAR TRADING</h1>
+    <h2>Premium Pre-Owned Vehicles</h2>
+    <p class="supporting">Quality Inspected &nbsp;•&nbsp; Financing Available &nbsp;•&nbsp; Nationwide Delivery</p>
+    <div class="ctas">
+      <button class="btn btn-fill" data-goto="inventory">Browse Inventory</button>
+      <button class="btn btn-outline" data-goto="contact">Contact Us</button>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Current Lineup</div>
+      <h2>Featured Inventory</h2>
+    </div>
+    <div class="grid" id="homeGrid"><div class="loading-row"><div class="spinner"></div>Loading inventory…</div></div>
+  </section>
+</div>
+
+<!-- ============ INVENTORY ============ -->
+<div class="page" id="page-inventory">
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Full Stock</div>
+      <h2>Inventory</h2>
+    </div>
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="Search by name or brand...">
+      <select id="brandFilter"><option value="">All Brands</option></select>
+      <select id="fuelFilter"><option value="">All Fuel Types</option></select>
+      <select id="transFilter"><option value="">All Transmissions</option></select>
+      <select id="priceFilter">
+        <option value="">All Prices</option>
+        <option value="0-800000">Under ₱800,000</option>
+        <option value="800000-1500000">₱800,000 – ₱1,500,000</option>
+        <option value="1500000-9999999">Above ₱1,500,000</option>
+      </select>
+      <select id="sortSelect">
+        <option value="newest">Sort: Newest</option>
+        <option value="price-asc">Sort: Price (Low to High)</option>
+        <option value="price-desc">Sort: Price (High to Low)</option>
+      </select>
+    </div>
+    <div class="grid" id="inventoryGrid"><div class="loading-row"><div class="spinner"></div>Loading inventory…</div></div>
+    <p class="empty-msg" id="emptyMsg" style="display:none;">No vehicles match those filters. Try clearing a few.</p>
+  </section>
+</div>
+
+<!-- ============ VEHICLE DETAIL ============ -->
+<div class="page" id="page-detail">
+  <section id="detailContent"></section>
+</div>
+
+<!-- ============ FINANCING ============ -->
+<div class="page" id="page-financing">
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Own It Sooner</div>
+      <h2>Financing</h2>
+    </div>
+    <p style="color:var(--silver); max-width:640px; line-height:1.8; margin-bottom:36px; font-size:14.5px;">
+      Select vehicles are available with in-house installment plans. Terms shown on each vehicle's page are estimates based on a 30% downpayment — final approval and rates depend on bank partner and buyer requirements. Reach out and our team will walk you through the paperwork.
+    </p>
+    <div class="grid" id="financingGrid"><div class="loading-row"><div class="spinner"></div>Loading…</div></div>
+  </section>
+</div>
+
+<!-- ============ ABOUT ============ -->
+<div class="page" id="page-about">
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Who We Are</div>
+      <h2>About Us</h2>
+    </div>
+    <div class="about-grid">
+      <div>
+        <p>GMN CAR TRADING sources, inspects, and sells pre-owned vehicles across the Philippines — from daily-driver crossovers to properly built off-road trucks. Every unit that reaches the lot has been checked for flood damage, accident history, and tampering before it's listed.</p>
+        <p>We're not a marketplace listing other people's cars — every vehicle here has been personally vetted by our team, and we stand behind the condition notes on every listing page.</p>
+        <div class="stat-row">
+          <div><div class="num" id="statCount">–</div><div class="lbl">Units In Stock</div></div>
+          <div><div class="num">100%</div><div class="lbl">Inspected</div></div>
+          <div><div class="num">0</div><div class="lbl">Flood Units</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="pillar-card"><h3>Quality</h3><p>No flood history, no accident history, not tampered — verified on every unit before listing.</p></div>
+        <div class="pillar-card"><h3>Trust</h3><p>Transparent condition reports and real mileage, so what you see is what you drive away in.</p></div>
+        <div class="pillar-card"><h3>Reliability</h3><p>Financing support and nationwide delivery so distance isn't the reason you miss out.</p></div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ============ CONTACT ============ -->
+<div class="page" id="page-contact">
+  <section>
+    <div class="section-head">
+      <div class="eyebrow">Let's Talk</div>
+      <h2>Contact</h2>
+    </div>
+    <div class="contact-grid">
+      <div>
+        <form id="inquiryForm">
+          <div class="form-field"><label>Name</label><input type="text" required></div>
+          <div class="form-field"><label>Email</label><input type="email" required></div>
+          <div class="form-field"><label>Phone Number</label><input type="tel" required></div>
+          <div class="form-field">
+            <label>Vehicle Interested In</label>
+            <select id="vehicleInterest"><option value="">General Inquiry</option></select>
+          </div>
+          <div class="form-field"><label>Message</label><textarea placeholder="Tell us what you're looking for..."></textarea></div>
+          <button type="submit" class="submit-btn">Send Inquiry</button>
+          <p class="form-note" id="formNote">This form is a UI demo — connect it to email or a backend service to receive submissions.</p>
+        </form>
+      </div>
+      <div>
+        <div class="map-box">B5 L5 Mindanao Ave Ext, Project 8, Quezon City, Metro Manila<br><span style="font-size:11px;">Map embed placeholder — add a live Google Maps iframe here.</span></div>
+        <div class="info-block">
+          <h3>Business Hours</h3>
+          <p>Monday – Saturday: 9:00 AM – 6:00 PM<br>Sunday: By appointment</p>
+        </div>
+        <div class="info-block">
+          <h3>Reach Us Directly</h3>
+          <p>Call / WhatsApp: 0917-144-8139 &nbsp;/&nbsp; 0994-214-6949<br>B5 L5 Mindanao Ave Ext, Project 8, Quezon City, Metro Manila</p>
+        </div>
+        <div class="info-block">
+          <h3>Follow Us</h3>
+          <div class="social-row">
+            <a href="https://www.facebook.com/GMNcartrading/" target="_blank" rel="noopener">Facebook</a>
+            <a href="https://www.instagram.com/gmncartrading/" target="_blank" rel="noopener">Instagram</a>
+            <a href="https://www.tiktok.com/@gmncartrading/" target="_blank" rel="noopener">TikTok</a>
+            <a href="https://m.me/GMNcartrading" target="_blank" rel="noopener">Messenger</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div id="lightbox">
+  <div class="lb-stage">
+    <button class="lb-close" onclick="closeLightbox()">&times;</button>
+    <button class="lb-arrow lb-prev" onclick="lbStep(-1)">&#10094;</button>
+    <img class="lb-main" id="lbImage" src="" alt="">
+    <button class="lb-arrow lb-next" onclick="lbStep(1)">&#10095;</button>
+  </div>
+  <div class="lb-counter" id="lbCounter"></div>
+  <div class="lb-thumbs" id="lbThumbs"></div>
+</div>
+
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="logo"><img src="logo.jpg" alt="GMN Car Trading" style="height:34px;width:auto;"> CAR TRADING</div>
+      <p>Premium Pre-Owned Vehicle Dealership.<br>Quality • Trust • Reliability</p>
+    </div>
+    <div class="footer-cols">
+      <div class="footer-col">
+        <h4>Site</h4>
+        <a href="#" data-goto="home">Home</a>
+        <a href="#" data-goto="inventory">Inventory</a>
+        <a href="#" data-goto="financing">Financing</a>
+        <a href="#" data-goto="about">About Us</a>
+        <a href="#" data-goto="contact">Contact</a>
+      </div>
+      <div class="footer-col">
+        <h4>Legal</h4>
+        <a href="#">Privacy Policy</a>
+        <a href="admin.html" style="opacity:0.35;">Admin</a>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="year"></span> GMN Car Trading. All rights reserved.</span>
+    <span>B5 L5 Mindanao Ave Ext, Project 8, Quezon City, Metro Manila &nbsp;•&nbsp; 0917-144-8139 / 0994-214-6949</span>
+  </div>
+</footer>
+
+<script type="module">
+import { firebaseConfig } from "./firebase-config.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+let vehicles = [];
+let dbReady = false;
+
+const iconMap = { suv:"suv", muscle:"muscle", mpv:"mpv", pickup:"pickup", pickup2:"pickup" };
+const icons = {
+  suv:`<path d="M15 55 L28 33 Q42 25 78 25 L128 25 Q154 25 170 46 L188 55 L188 62 L15 62 Z"/><circle cx="50" cy="62" r="11"/><circle cx="150" cy="62" r="11"/>`,
+  muscle:`<path d="M8 56 L24 30 Q40 20 100 20 L140 20 Q160 20 175 38 L192 56 L192 62 L8 62 Z"/><circle cx="46" cy="62" r="12"/><circle cx="154" cy="62" r="12"/>`,
+  mpv:`<path d="M14 54 L28 30 Q40 22 90 22 L128 22 Q152 22 168 42 L186 54 L186 61 L14 61 Z"/><circle cx="52" cy="61" r="10"/><circle cx="148" cy="61" r="10"/>`,
+  pickup:`<path d="M10 56 L24 34 Q34 26 68 26 L100 26 L100 46 L190 46 L190 56 L190 60 L10 60 Z"/><circle cx="48" cy="60" r="11"/><circle cx="158" cy="60" r="11"/>`
+};
+function iconSvg(type){ return `<svg viewBox="0 0 200 80" fill="none" stroke="currentColor" stroke-width="2">${icons[type]||icons.suv}</svg>`; }
+
+const peso = n => "₱" + Number(n||0).toLocaleString("en-PH");
+const km = n => Number(n||0).toLocaleString("en-PH") + " kms";
+
+function cardHTML(v){
+  const photos = v.photos || [];
+  return `
+  <div class="card">
+    <div class="thumb"><span class="tag">${v.fuel||""}</span>${photos.length ? `<img src="${photos[0]}" alt="${v.name}" style="width:100%;height:100%;object-fit:contain;">` : iconSvg(v.icon)}</div>
+    <div class="body">
+      <div class="name">${v.name}</div>
+      <div class="meta">
+        <span>${v.transmission||""}</span>
+        <span>${km(v.mileage)}</span>
+        <span>${v.fuel||""}</span>
+      </div>
+      <div class="price"><small>Price</small><br>${peso(v.price)}</div>
+      <button class="view-btn" data-detail="${v.id}">View Details</button>
+    </div>
+  </div>`;
+}
+
+function detailHTML(v){
+  const photos = v.photos || [];
+  const features = v.features || [];
+  const modifications = v.modifications || [];
+  const financing = v.financing || null;
+
+  const featureCols = features.length ? `<ul class="feature-list">${features.map(f=>`<li>${f}</li>`).join("")}</ul>` : `<p style="color:var(--silver); font-size:13px;">No feature list added yet.</p>`;
+  const modsBlock = modifications.length ? `
+    <div class="block-title">Modifications / Loads</div>
+    <ul class="feature-list">${modifications.map(m=>`<li>${m}</li>`).join("")}</ul>` : "";
+  const financingBlock = (financing && financing.terms && financing.terms.length) ? `
+    <div class="block-title">Financing</div>
+    <p style="color:var(--silver); font-size:13px; margin-bottom:10px;">Downpayment: ${financing.down||""}</p>
+    <table class="financing">
+      <thead><tr><th>Term</th><th>Monthly</th></tr></thead>
+      <tbody>${financing.terms.map(t=>`<tr><td>${t[0]}</td><td>${t[1]}</td></tr>`).join("")}</tbody>
+    </table>` : "";
+  const waNumber = "639171448139";
+
+  return `
+  <a href="#" class="detail-back" data-goto="inventory">← Back to Inventory</a>
+  <div class="detail-grid">
+    <div>
+      <div class="gallery-main" ${photos.length ? `onclick="openLightbox('${v.id}',0)" style="cursor:pointer;"` : ""}>
+        ${photos.length ? `<img src="${photos[0]}" alt="${v.name}" style="width:100%;height:100%;object-fit:contain;">` : iconSvg(v.icon)}
+        ${photos.length ? `<span class="gallery-count">⛶ View Gallery (${photos.length})</span>` : ""}
+      </div>
+      ${photos.length > 1 ? `<div class="thumb-strip">${photos.map((p,i)=>`<img src="${p}" alt="${v.name} photo ${i+1}" onclick="openLightbox('${v.id}',${i})">`).join("")}</div>` : ""}
+      <div class="gallery-note">${photos.length ? "" : "Photo pending — awaiting listing photos for this unit."}</div>
+      <div class="block-title">Details / Features</div>
+      ${featureCols}
+      ${modsBlock}
+      ${financingBlock}
+    </div>
+    <div>
+      <div class="detail-name">${v.name}</div>
+      <div class="detail-meta">${v.brand||""} • ${v.year||""}</div>
+      <div class="detail-price">${peso(v.price)}</div>
+      <div class="spec-row">
+        <div><span class="l">Transmission</span><span class="v">${v.transmission||"—"}</span></div>
+        <div><span class="l">Mileage</span><span class="v">${km(v.mileage)}</span></div>
+        <div><span class="l">Fuel Type</span><span class="v">${v.fuel||"—"}</span></div>
+        <div><span class="l">Brand</span><span class="v">${v.brand||"—"}</span></div>
+      </div>
+      <div class="sticky-inquire">
+        <strong style="font-family:'Bebas Neue',sans-serif; font-size:18px;">Inquire Now</strong>
+        <div class="contact-actions">
+          <a class="icon-btn" href="https://m.me/GMNcartrading" target="_blank" rel="noopener">Messenger</a>
+          <a class="icon-btn" href="https://wa.me/${waNumber}?text=${encodeURIComponent("Hi, I'm interested in the "+v.name)}" target="_blank" rel="noopener">WhatsApp</a>
+          <a class="icon-btn" href="tel:+639171448139">Call</a>
+          <button class="icon-btn" onclick="shareVehicle('${v.id}')">Share</button>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+window.shareVehicle = function(id){
+  const v = vehicles.find(x=>x.id===id);
+  if(!v) return;
+  const text = `${v.name} — ${peso(v.price)} at GMN Car Trading`;
+  if(navigator.share){ navigator.share({title:v.name, text}).catch(()=>{}); }
+  else { navigator.clipboard.writeText(text); alert("Listing details copied to clipboard:\n\n"+text); }
+};
+
+/* ---------------- Render grids ---------------- */
+function renderHome(){
+  const el = document.getElementById("homeGrid");
+  if(!vehicles.length){ el.innerHTML = `<p class="empty-msg">No vehicles listed yet — check back soon.</p>`; return; }
+  el.innerHTML = vehicles.map(cardHTML).join("");
+}
+function renderFinancing(){
+  const withFinancing = vehicles.filter(v=>v.financing && v.financing.terms && v.financing.terms.length);
+  const el = document.getElementById("financingGrid");
+  el.innerHTML = withFinancing.length ? withFinancing.map(cardHTML).join("") : `<p class="empty-msg">No financing-eligible units listed right now.</p>`;
+}
+function populateFilters(){
+  const brandSel = document.getElementById("brandFilter");
+  const fuelSel = document.getElementById("fuelFilter");
+  const transSel = document.getElementById("transFilter");
+  const interestSel = document.getElementById("vehicleInterest");
+  [brandSel, fuelSel, transSel].forEach(s=>{ s.innerHTML = s.options[0].outerHTML; });
+  interestSel.innerHTML = `<option value="">General Inquiry</option>`;
+  [...new Set(vehicles.map(v=>v.brand).filter(Boolean))].sort().forEach(b=>brandSel.insertAdjacentHTML("beforeend", `<option value="${b}">${b}</option>`));
+  [...new Set(vehicles.map(v=>v.fuel).filter(Boolean))].sort().forEach(f=>fuelSel.insertAdjacentHTML("beforeend", `<option value="${f}">${f}</option>`));
+  [...new Set(vehicles.map(v=>v.transmission).filter(Boolean))].sort().forEach(t=>transSel.insertAdjacentHTML("beforeend", `<option value="${t}">${t}</option>`));
+  vehicles.forEach(v=>interestSel.insertAdjacentHTML("beforeend", `<option value="${v.id}">${v.name}</option>`));
+}
+function applyFilters(){
+  const q = document.getElementById("searchInput").value.trim().toLowerCase();
+  const brand = document.getElementById("brandFilter").value;
+  const fuel = document.getElementById("fuelFilter").value;
+  const trans = document.getElementById("transFilter").value;
+  const priceRange = document.getElementById("priceFilter").value;
+  const sort = document.getElementById("sortSelect").value;
+
+  let result = vehicles.filter(v=>{
+    if(q && !((v.name||"").toLowerCase().includes(q) || (v.brand||"").toLowerCase().includes(q))) return false;
+    if(brand && v.brand!==brand) return false;
+    if(fuel && v.fuel!==fuel) return false;
+    if(trans && v.transmission!==trans) return false;
+    if(priceRange){
+      const [min,max] = priceRange.split("-").map(Number);
+      if(v.price<min || v.price>max) return false;
+    }
+    return true;
+  });
+  if(sort==="price-asc") result.sort((a,b)=>a.price-b.price);
+  else if(sort==="price-desc") result.sort((a,b)=>b.price-a.price);
+  else result.sort((a,b)=>(b.year||0)-(a.year||0));
+
+  const grid = document.getElementById("inventoryGrid");
+  const emptyMsg = document.getElementById("emptyMsg");
+  if(!vehicles.length){
+    grid.innerHTML = ""; emptyMsg.style.display="block"; emptyMsg.textContent = "No vehicles listed yet — check back soon.";
+    return;
+  }
+  if(result.length===0){
+    grid.innerHTML=""; emptyMsg.style.display="block"; emptyMsg.textContent = "No vehicles match those filters. Try clearing a few.";
+  } else {
+    emptyMsg.style.display="none";
+    grid.innerHTML = result.map(cardHTML).join("");
+  }
+}
+
+/* ---------------- Page navigation ---------------- */
+function goToPage(page, opts={}){
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+  document.querySelectorAll("nav.links a").forEach(a=>a.classList.toggle("active", a.dataset.page===page));
+  window.scrollTo({top:0, behavior:"smooth"});
+  if(page==="inventory") applyFilters();
+  if(opts.vehicleId){
+    const v = vehicles.find(x=>x.id===opts.vehicleId);
+    document.getElementById("detailContent").innerHTML = v ? detailHTML(v) : `<p class="empty-msg">Vehicle not found — it may have been sold.</p>`;
+  }
+}
+window.goToPage = goToPage;
+
+document.addEventListener("click", e=>{
+  const gotoEl = e.target.closest("[data-goto]");
+  if(gotoEl){ e.preventDefault(); goToPage(gotoEl.dataset.goto); }
+  const navEl = e.target.closest("nav.links a");
+  if(navEl){ e.preventDefault(); goToPage(navEl.dataset.page); }
+  const detailBtn = e.target.closest("[data-detail]");
+  if(detailBtn){ e.preventDefault(); goToPage("detail", {vehicleId:detailBtn.dataset.detail}); }
+});
+
+document.getElementById("navToggle").addEventListener("click", ()=>{
+  const links = document.getElementById("navLinks");
+  const showing = links.style.display==="flex";
+  links.style.display = showing ? "none" : "flex";
+  links.style.flexDirection="column";
+  links.style.position="absolute";
+  links.style.top="64px"; links.style.right="5vw";
+  links.style.background="var(--black-matte)";
+  links.style.border="1px solid var(--line)";
+  links.style.padding="16px 24px";
+});
+
+["searchInput","brandFilter","fuelFilter","transFilter","priceFilter","sortSelect"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", applyFilters);
+});
+
+document.getElementById("inquiryForm").addEventListener("submit", e=>{
+  e.preventDefault();
+  document.getElementById("formNote").textContent = "Thanks — this demo form isn't wired to a backend yet, so nothing was actually sent. Connect it to email or a form service to go live.";
+});
+
+/* ---------------- Lightbox ---------------- */
+let lbPhotos = [];
+let lbIndex = 0;
+window.openLightbox = function(vehicleId, startIndex){
+  const v = vehicles.find(x=>x.id===vehicleId);
+  if(!v || !v.photos || !v.photos.length) return;
+  lbPhotos = v.photos; lbIndex = startIndex || 0;
+  renderLightbox();
+  document.getElementById("lightbox").classList.add("open");
+};
+window.closeLightbox = function(){ document.getElementById("lightbox").classList.remove("open"); };
+window.lbStep = function(dir){ lbIndex = (lbIndex + dir + lbPhotos.length) % lbPhotos.length; renderLightbox(); };
+function renderLightbox(){
+  document.getElementById("lbImage").src = lbPhotos[lbIndex];
+  document.getElementById("lbCounter").textContent = `${lbIndex+1} / ${lbPhotos.length}`;
+  document.getElementById("lbThumbs").innerHTML = lbPhotos.map((p,i)=>`<img src="${p}" class="${i===lbIndex?'active':''}" onclick="lbIndex=${i}; renderLightboxPublic();">`).join("");
+}
+window.renderLightboxPublic = renderLightbox;
+document.getElementById("lightbox").addEventListener("click", e=>{ if(e.target.id==="lightbox") closeLightbox(); });
+document.addEventListener("keydown", e=>{
+  if(!document.getElementById("lightbox").classList.contains("open")) return;
+  if(e.key==="Escape") closeLightbox();
+  if(e.key==="ArrowLeft") lbStep(-1);
+  if(e.key==="ArrowRight") lbStep(1);
+});
+
+/* ---------------- Firebase live data ---------------- */
+document.getElementById("year").textContent = new Date().getFullYear();
+
+try{
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const q = query(collection(db, "vehicles"), orderBy("year", "desc"));
+  onSnapshot(q, snap=>{
+    vehicles = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    dbReady = true;
+    renderHome();
+    renderFinancing();
+    populateFilters();
+    applyFilters();
+    const statCount = document.getElementById("statCount");
+    if(statCount) statCount.textContent = vehicles.length + "+";
+  }, err=>{
+    console.error(err);
+    showConnError(err.message);
+  });
+}catch(err){
+  console.error(err);
+  showConnError(err.message);
+}
+
+function showConnError(msg){
+  const box = `<div class="conn-error"><strong>Can't load live inventory yet.</strong><br>
+    This site is waiting on its Firebase connection — make sure <code>firebase-config.js</code> has your real project keys and that Firestore is enabled.<br>
+    <span style="opacity:0.7;">Details: ${msg}</span></div>`;
+  document.getElementById("homeGrid").innerHTML = box;
+  document.getElementById("inventoryGrid").innerHTML = box;
+}
+
+setTimeout(()=>document.getElementById("loader").classList.add("hide"), 900);
+</script>
+</body>
+</html>

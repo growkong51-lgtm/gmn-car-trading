@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GMN CAR TRADING — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+<style>
+  :root{
+    --black-deep:#0B0B0B;
+    --black-matte:#161616;
+    --black-card:#1D1D1D;
+    --red:#E10600;
+    --red-dim:#a80400;
+    --white:#FFFFFF;
+    --silver:#BFC3C7;
+    --line: rgba(191,195,199,0.15);
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--black-deep);
+    color:var(--white);
+    font-family:'Inter', sans-serif;
+    min-height:100vh;
+  }
+  h1,h2,h3, .display{
+    font-family:'Bebas Neue', sans-serif;
+    letter-spacing:0.02em;
+  }
+  a{ color:inherit; text-decoration:none; }
+  button{ font-family:'Inter', sans-serif; cursor:pointer; border:none; }
+  img{ max-width:100%; display:block; }
+  ::selection{ background:var(--red); color:var(--white); }
+
+  /* ---------- Loading screen ---------- */
+  #loader{
+    position:fixed; inset:0; z-index:999;
+    background:var(--black-deep);
+    display:flex; align-items:center; justify-content:center; flex-direction:column;
+    transition:opacity .5s ease, visibility .5s ease;
+  }
+  #loader .mark{
+    width:64px; height:64px; border:3px solid var(--line);
+    border-top-color:var(--red); border-radius:50%;
+    animation:spin 0.9s linear infinite;
+  }
+  #loader .word{ font-family:'Bebas Neue',sans-serif; font-size:22px; letter-spacing:0.35em; margin-top:22px; color:var(--silver); }
+  #loader.hide{ opacity:0; visibility:hidden; }
+  @keyframes spin{ to{ transform:rotate(360deg); } }
+
+  /* ---------- Nav ---------- */
+  header.nav{
+    position:sticky; top:0; z-index:100;
+    background:rgba(22,22,22,0.65);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 5vw;
+  }
+  .logo{
+    display:flex; align-items:center; gap:10px;
+    font-family:'Bebas Neue', sans-serif; font-size:22px; letter-spacing:0.08em;
+  }
+  .logo .box{
+    width:34px; height:34px; background:var(--red);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Bebas Neue',sans-serif; font-size:16px; color:var(--white);
+  }
+  nav.links{ display:flex; gap:34px; }
+  nav.links a{
+    font-size:13px; letter-spacing:0.08em; text-transform:uppercase; color:var(--silver);
+    padding-bottom:4px; border-bottom:2px solid transparent; transition:color .2s, border-color .2s;
+  }
+  nav.links a:hover, nav.links a.active{ color:var(--white); border-color:var(--red); }
+  #navToggle{ display:none; background:none; color:var(--white); font-size:24px; }
+
+  /* ---------- Page sections ---------- */
+  .page{ display:none; }
+  .page.active{ display:block; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    position:relative; min-height:88vh;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
+    padding:40px 6vw; overflow:hidden;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(225,6,0,0.14), transparent 55%),
+      radial-gradient(ellipse at 75% 80%, rgba(191,195,199,0.08), transparent 50%),
+      linear-gradient(180deg, var(--black-deep), var(--black-matte));
+  }
+  .hero::after{
+    content:""; position:absolute; inset:0;
+    background-image:repeating-linear-gradient(115deg, rgba(255,255,255,0.02) 0 2px, transparent 2px 60px);
+    animation:drift 14s linear infinite;
+  }
+  @keyframes drift{ from{ background-position:0 0; } to{ background-position:600px 0; } }
+  .hero .logo-big{
+    width:auto; height:78px; margin-bottom:30px; position:relative; z-index:1;
+  }
+  .hero h1{ font-size:clamp(48px, 9vw, 108px); line-height:0.95; position:relative; z-index:1; }
+  .hero h2{ font-size:clamp(18px, 2.6vw, 26px); color:var(--silver); font-family:'Inter',sans-serif; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; margin-top:12px; position:relative; z-index:1; }
+  .hero .supporting{ margin-top:16px; color:var(--silver); font-size:14px; letter-spacing:0.04em; position:relative; z-index:1; }
+  .hero .ctas{ margin-top:38px; display:flex; gap:16px; flex-wrap:wrap; justify-content:center; position:relative; z-index:1; }
+  .btn{
+    padding:15px 34px; font-size:13px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700;
+    transition:transform .2s ease, background .2s ease, color .2s ease;
+  }
+  .btn:hover{ transform:translateY(-2px); }
+  .btn-fill{ background:var(--red); color:var(--white); }
+  .btn-fill:hover{ background:var(--red-dim); }
+  .btn-outline{ background:transparent; color:var(--white); border:1.5px solid var(--silver); }
+  .btn-outline:hover{ border-color:var(--white); }
+
+  /* ---------- Section shell ---------- */
+  section{ padding:80px 6vw; }
+  .section-head{ margin-bottom:40px; }
+  .eyebrow{ color:var(--red); font-size:12px; letter-spacing:0.3em; text-transform:uppercase; margin-bottom:10px; font-weight:700; }
+  .section-head h2{ font-size:clamp(32px,4.5vw,54px); }
+
+  /* ---------- Filters ---------- */
+  .filters{
+    display:flex; flex-wrap:wrap; gap:12px; margin-bottom:36px;
+    background:var(--black-matte); border:1px solid var(--line); padding:18px;
+  }
+  .filters input, .filters select{
+    background:var(--black-card); border:1px solid var(--line); color:var(--white);
+    padding:11px 14px; font-size:13px; font-family:'Inter',sans-serif; min-width:150px;
+  }
+  .filters input::placeholder{ color:var(--silver); }
+  .filters select{ cursor:pointer; }
+
+  /* ---------- Inventory grid ---------- */
+  .grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(300px,1fr)); gap:26px; }
+  .card{
+    background:var(--black-card); border:1px solid var(--line); overflow:hidden;
+    transition:border-color .25s, transform .25s;
+  }
+  .card:hover{ border-color:var(--red); transform:translateY(-4px); }
+  .card .thumb{
+    aspect-ratio:1/1; height:auto; background:linear-gradient(160deg, var(--black-matte), var(--black-deep));
+    display:flex; align-items:center; justify-content:center; border-bottom:1px solid var(--line);
+    position:relative;
+  }
+  .card .thumb svg{ width:70%; stroke:var(--silver); }
+  .card .thumb .tag{
+    position:absolute; top:12px; left:12px; background:var(--red); color:var(--white);
+    font-size:10px; letter-spacing:0.1em; text-transform:uppercase; padding:4px 9px; font-weight:700;
+  }
+  .card .body{ padding:20px 20px 24px; }
+  .card .name{ font-family:'Bebas Neue',sans-serif; font-size:23px; letter-spacing:0.02em; margin-bottom:12px; }
+  .card .meta{ display:flex; flex-wrap:wrap; gap:8px 16px; color:var(--silver); font-size:12.5px; margin-bottom:16px; }
+  .card .meta span{ display:flex; align-items:center; gap:5px; }
+  .card .meta span::before{ content:"—"; color:var(--red); }
+  .card .price{ font-family:'Bebas Neue',sans-serif; font-size:26px; color:var(--white); margin-bottom:16px; }
+  .card .price small{ font-family:'Inter',sans-serif; color:var(--silver); font-size:11px; letter-spacing:0.08em; }
+  .card .view-btn{
+    width:100%; padding:12px; background:transparent; border:1.5px solid var(--red); color:var(--white);
+    font-size:12px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; transition:background .2s;
+  }
+  .card .view-btn:hover{ background:var(--red); }
+  .empty-msg{ color:var(--silver); padding:40px 0; text-align:center; }
+
+  /* ---------- Vehicle detail ---------- */
+  .detail-back{ color:var(--silver); font-size:12px; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:24px; display:inline-block; }
+  .detail-back:hover{ color:var(--red); }
+  .detail-grid{ display:grid; grid-template-columns:1.15fr 0.85fr; gap:48px; }
+  @media (max-width:900px){ .detail-grid{ grid-template-columns:1fr; } }
+  .gallery-main{
+    aspect-ratio:1/1; height:auto; background:linear-gradient(160deg, var(--black-matte), var(--black-deep));
+    border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden;
+  }
+  .gallery-main svg{ width:55%; stroke:var(--silver); }
+  .gallery-count{
+    position:absolute; bottom:12px; right:12px; background:rgba(11,11,11,0.75); color:var(--white);
+    font-size:11px; letter-spacing:0.06em; text-transform:uppercase; padding:8px 12px; border:1px solid var(--line);
+  }
+  .thumb-strip{ display:flex; gap:8px; margin-top:10px; overflow-x:auto; padding-bottom:4px; }
+  .thumb-strip img{
+    width:64px; height:64px; object-fit:contain; background:var(--black-matte); flex:0 0 auto; cursor:pointer;
+    border:1px solid var(--line); opacity:0.75; transition:opacity .2s, border-color .2s;
+  }
+  .thumb-strip img:hover{ opacity:1; border-color:var(--red); }
+  .gallery-note{ margin-top:10px; font-size:11.5px; color:var(--silver); letter-spacing:0.02em; }
+
+  /* ---------- Lightbox ---------- */
+  #lightbox{
+    display:none; position:fixed; inset:0; z-index:500; background:rgba(11,11,11,0.96);
+    align-items:center; justify-content:center; flex-direction:column; padding:24px;
+  }
+  #lightbox.open{ display:flex; }
+  #lightbox .lb-stage{ position:relative; width:100%; max-width:640px; aspect-ratio:1/1; display:flex; align-items:center; justify-content:center; background:var(--black-matte); border:1px solid var(--line); }
+  #lightbox img.lb-main{ max-width:100%; max-height:100%; object-fit:contain; }
+  #lightbox .lb-close{
+    position:absolute; top:-6px; right:0; background:none; color:var(--white); font-size:28px; line-height:1;
+    padding:8px 12px;
+  }
+  #lightbox .lb-close:hover{ color:var(--red); }
+  #lightbox .lb-arrow{
+    position:absolute; top:50%; transform:translateY(-50%); background:rgba(11,11,11,0.7); color:var(--white);
+    border:1px solid var(--line); font-size:22px; padding:10px 16px;
+  }
+  #lightbox .lb-arrow:hover{ border-color:var(--red); color:var(--red); }
+  #lightbox .lb-prev{ left:0; }
+  #lightbox .lb-next{ right:0; }
+  #lightbox .lb-counter{ margin-top:14px; color:var(--silver); font-size:12.5px; letter-spacing:0.06em; }
+  #lightbox .lb-thumbs{ display:flex; gap:8px; margin-top:16px; max-width:640px; overflow-x:auto; padding-bottom:4px; }
+  #lightbox .lb-thumbs img{
+    width:60px; height:60px; object-fit:contain; background:var(--black-matte); flex:0 0 auto; cursor:pointer; opacity:0.55;
+    border:2px solid transparent; transition:opacity .2s, border-color .2s;
+  }
+  #lightbox .lb-thumbs img.active{ opacity:1; border-color:var(--red); }
+  @media (max-width:700px){
+    #lightbox .lb-arrow{ font-size:18px; padding:8px 10px; }
+    #lightbox .lb-stage{ max-width:100%; }
+  }
+  .detail-name{ font-family:'Bebas Neue',sans-serif; font-size:42px; line-height:1; margin-bottom:8px; }
+  .detail-meta{ color:var(--silver); font-size:13px; margin-bottom:22px; letter-spacing:0.03em; }
+  .detail-price{ font-family:'Bebas Neue',sans-serif; font-size:44px; color:var(--red); margin-bottom:22px; }
+  .spec-row{ display:grid; grid-template-columns:1fr 1fr; gap:12px 20px; padding:20px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); margin-bottom:26px; }
+  .spec-row div span{ display:block; }
+  .spec-row .l{ font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--silver); margin-bottom:3px; }
+  .spec-row .v{ font-size:14px; font-weight:600; }
+  .block-title{ font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:0.05em; margin:26px 0 12px; color:var(--white); }
+  ul.feature-list{ list-style:none; display:grid; grid-template-columns:1fr 1fr; gap:9px 18px; }
+  ul.feature-list li{ font-size:13.5px; color:var(--silver); padding-left:16px; position:relative; }
+  ul.feature-list li::before{ content:"—"; position:absolute; left:0; color:var(--red); }
+  table.financing{ width:100%; border-collapse:collapse; font-size:13.5px; }
+  table.financing th, table.financing td{ text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); color:var(--silver); }
+  table.financing th{ color:var(--white); text-transform:uppercase; font-size:11px; letter-spacing:0.08em; }
+  table.financing td:last-child, table.financing th:last-child{ text-align:right; color:var(--white); }
+
+  .sticky-inquire{
+    position:sticky; bottom:0; margin-top:36px; background:var(--black-matte); border:1px solid var(--line);
+    padding:18px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between;
+  }
+  .contact-actions{ display:flex; gap:10px; flex-wrap:wrap; }
+  .icon-btn{
+    padding:12px 18px; font-size:12px; letter-spacing:0.06em; text-transform:uppercase; font-weight:700;
+    background:var(--black-card); border:1px solid var(--line); color:var(--white); transition:border-color .2s, color .2s;
+  }
+  .icon-btn:hover{ border-color:var(--red); color:var(--red); }
+
+  /* ---------- About ---------- */
+  .about-grid{ display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:center; }
+  @media (max-width:800px){ .about-grid{ grid-template-columns:1fr; } }
+  .about-grid p{ color:var(--silver); line-height:1.85; font-size:14.5px; margin-bottom:14px; }
+  .stat-row{ display:flex; gap:36px; margin-top:26px; flex-wrap:wrap; }
+  .stat-row div{ }
+  .stat-row .num{ font-family:'Bebas Neue',sans-serif; font-size:38px; color:var(--red); }
+  .stat-row .lbl{ font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--silver); }
+  .pillar-card{ background:var(--black-card); border:1px solid var(--line); padding:22px; margin-bottom:14px; }
+  .pillar-card h3{ font-family:'Bebas Neue',sans-serif; font-size:19px; margin-bottom:6px; }
+  .pillar-card p{ font-size:13px; color:var(--silver); margin:0; }
+
+  /* ---------- Contact ---------- */
+  .contact-grid{ display:grid; grid-template-columns:1fr 1fr; gap:48px; }
+  @media (max-width:900px){ .contact-grid{ grid-template-columns:1fr; } }
+  .form-field{ margin-bottom:16px; }
+  .form-field label{ display:block; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--silver); margin-bottom:6px; }
+  .form-field input, .form-field select, .form-field textarea{
+    width:100%; background:var(--black-card); border:1px solid var(--line); color:var(--white);
+    padding:12px 14px; font-family:'Inter',sans-serif; font-size:13.5px;
+  }
+  .form-field textarea{ min-height:110px; resize:vertical; }
+  .submit-btn{ padding:14px 30px; background:var(--red); color:var(--white); font-size:12.5px; letter-spacing:0.1em; text-transform:uppercase; font-weight:700; }
+  .submit-btn:hover{ background:var(--red-dim); }
+  .form-note{ font-size:12px; color:var(--silver); margin-top:12px; }
+  .map-box{ height:220px; background:var(--black-card); border:1px solid var(--line); display:flex; align-items:center; justify-content:center; color:var(--silver); font-size:12.5px; letter-spacing:0.05em; text-align:center; padding:20px; margin-bottom:24px; }
+  .info-block{ margin-bottom:22px; }
+  .info-block h3{ font-family:'Bebas Neue',sans-serif; font-size:18px; margin-bottom:8px; }
+  .info-block p{ color:var(--silver); font-size:13.5px; line-height:1.7; }
+  .social-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .social-row a{ padding:10px 16px; border:1px solid var(--line); font-size:12px; letter-spacing:0.05em; text-transform:uppercase; }
+  .social-row a:hover{ border-color:var(--red); color:var(--red); }
+
+  /* ---------- Footer ---------- */
+  footer{
+    border-top:1px solid var(--line); background:var(--black-matte); padding:56px 6vw 30px;
+  }
+  .footer-top{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:40px; margin-bottom:40px; }
+  .footer-brand .logo{ margin-bottom:14px; }
+  .footer-brand p{ color:var(--silver); font-size:13px; max-width:280px; line-height:1.7; }
+  .footer-cols{ display:flex; gap:60px; flex-wrap:wrap; }
+  .footer-col h4{ font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--silver); margin-bottom:14px; }
+  .footer-col a{ display:block; font-size:13.5px; color:var(--white); margin-bottom:10px; }
+  .footer-col a:hover{ color:var(--red); }
+  .footer-bottom{
+    border-top:1px solid var(--line); padding-top:22px; display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px;
+    color:var(--silver); font-size:11.5px; letter-spacing:0.03em;
+  }
+
+  @media (max-width:760px){
+    nav.links{ display:none; }
+    #navToggle{ display:block; }
+    .spec-row, ul.feature-list{ grid-template-columns:1fr; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .hero::after{ animation:none; } .card{ transition:none; } #loader .mark{ animation:none; }
+  }
+</style>
+
+
+  /* ---------- Admin-only additions ---------- */
+  body{ min-height:100vh; }
+  #loginScreen{
+    min-height:92vh; display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  .login-box{
+    width:100%; max-width:360px; background:var(--black-card); border:1px solid var(--line); padding:36px 30px;
+  }
+  .login-box h2{ font-size:30px; margin-bottom:6px; }
+  .login-box p{ color:var(--silver); font-size:13px; margin-bottom:24px; }
+  .login-err{ color:var(--red); font-size:12.5px; margin-top:10px; min-height:16px; }
+  #adminApp{ display:none; }
+  .admin-topbar{
+    display:flex; justify-content:space-between; align-items:center; padding:16px 5vw;
+    border-bottom:1px solid var(--line); background:var(--black-matte);
+  }
+  .admin-topbar .who{ color:var(--silver); font-size:12.5px; }
+  .admin-wrap{ padding:36px 5vw 80px; }
+  .admin-head{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:14px; margin-bottom:28px; }
+  .table-wrap{ overflow-x:auto; border:1px solid var(--line); }
+  table.veh-table{ width:100%; border-collapse:collapse; font-size:13px; min-width:720px; }
+  table.veh-table th, table.veh-table td{ text-align:left; padding:12px 14px; border-bottom:1px solid var(--line); }
+  table.veh-table th{ background:var(--black-matte); text-transform:uppercase; letter-spacing:0.06em; font-size:10.5px; color:var(--silver); }
+  table.veh-table img{ width:56px; height:42px; object-fit:cover; background:var(--black-matte); }
+  table.veh-table .row-actions{ display:flex; gap:8px; }
+  .mini-btn{ padding:7px 14px; font-size:11px; letter-spacing:0.05em; text-transform:uppercase; background:var(--black-matte); border:1px solid var(--line); color:var(--white); }
+  .mini-btn:hover{ border-color:var(--red); color:var(--red); }
+  .mini-btn.danger:hover{ border-color:#ff4444; color:#ff4444; }
+
+  /* Modal form */
+  #formModal{
+    display:none; position:fixed; inset:0; background:rgba(11,11,11,0.9); z-index:400;
+    align-items:flex-start; justify-content:center; overflow-y:auto; padding:40px 20px;
+  }
+  #formModal.open{ display:flex; }
+  .modal-card{
+    width:100%; max-width:760px; background:var(--black-card); border:1px solid var(--line); padding:32px;
+  }
+  .modal-card h2{ font-size:26px; margin-bottom:22px; }
+  .form-grid{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:640px){ .form-grid{ grid-template-columns:1fr; } }
+  .form-field label{ display:block; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--silver); margin-bottom:6px; }
+  .form-field input, .form-field select, .form-field textarea{
+    width:100%; background:var(--black-matte); border:1px solid var(--line); color:var(--white);
+    padding:11px 13px; font-family:'Inter',sans-serif; font-size:13.5px;
+  }
+  .form-field textarea{ min-height:90px; resize:vertical; }
+  .span-2{ grid-column:1 / -1; }
+  .fin-row{ display:grid; grid-template-columns:1fr 1fr auto; gap:8px; margin-bottom:8px; align-items:center; }
+  .fin-row input{ background:var(--black-matte); border:1px solid var(--line); color:var(--white); padding:9px 11px; font-size:13px; }
+  .photo-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(100px,1fr)); gap:10px; margin-top:10px; }
+  .photo-thumb{ position:relative; aspect-ratio:1/1; background:var(--black-matte); border:1px solid var(--line); }
+  .photo-thumb img{ width:100%; height:100%; object-fit:cover; }
+  .photo-thumb .rm{
+    position:absolute; top:4px; right:4px; background:rgba(11,11,11,0.85); color:var(--white); border:none;
+    width:22px; height:22px; font-size:14px; cursor:pointer;
+  }
+  .photo-thumb .rm:hover{ background:var(--red); }
+  .upload-drop{
+    border:1.5px dashed var(--line); padding:22px; text-align:center; color:var(--silver); font-size:12.5px;
+    cursor:pointer; margin-top:10px;
+  }
+  .upload-drop:hover{ border-color:var(--red); color:var(--white); }
+  .modal-actions{ display:flex; justify-content:flex-end; gap:12px; margin-top:26px; }
+  .status-msg{ font-size:12.5px; color:var(--silver); margin-top:10px; min-height:16px; }
+  .status-msg.err{ color:var(--red); }
+  .status-msg.ok{ color:#4caf50; }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen">
+  <div class="login-box">
+    <h2>Admin Login</h2>
+    <p>GMN Car Trading inventory management</p>
+    <div class="form-field" style="margin-bottom:14px;"><label>Email</label><input type="email" id="loginEmail"></div>
+    <div class="form-field" style="margin-bottom:14px;"><label>Password</label><input type="password" id="loginPassword"></div>
+    <button class="btn btn-fill" id="loginBtn" style="width:100%;">Log In</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ============ ADMIN APP ============ -->
+<div id="adminApp">
+  <div class="admin-topbar">
+    <div class="logo"><img src="logo.jpg" alt="GMN Car Trading" style="height:30px;width:auto;"> ADMIN</div>
+    <div style="display:flex; align-items:center; gap:16px;">
+      <span class="who" id="whoAmI"></span>
+      <a href="index.html" class="mini-btn">View Site</a>
+      <button class="mini-btn" id="logoutBtn">Log Out</button>
+    </div>
+  </div>
+
+  <div class="admin-wrap">
+    <div class="admin-head">
+      <div>
+        <div class="eyebrow">Inventory Management</div>
+        <h2 style="font-family:'Bebas Neue',sans-serif; font-size:32px;">Vehicles</h2>
+      </div>
+      <button class="btn btn-fill" id="addVehicleBtn">+ Add Vehicle</button>
+    </div>
+
+    <div class="table-wrap">
+      <table class="veh-table">
+        <thead>
+          <tr><th>Photo</th><th>Name</th><th>Brand</th><th>Price</th><th>Year</th><th>Actions</th></tr>
+        </thead>
+        <tbody id="vehicleRows">
+          <tr><td colspan="6" style="text-align:center; color:var(--silver); padding:30px;">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ============ ADD/EDIT MODAL ============ -->
+<div id="formModal">
+  <div class="modal-card">
+    <h2 id="modalTitle">Add Vehicle</h2>
+    <div class="form-grid">
+      <div class="form-field"><label>Brand</label><input type="text" id="f_brand" placeholder="Toyota"></div>
+      <div class="form-field"><label>Full Listing Name</label><input type="text" id="f_name" placeholder="2016 Toyota FJ Cruiser 4x4"></div>
+      <div class="form-field"><label>Year</label><input type="number" id="f_year" placeholder="2016"></div>
+      <div class="form-field"><label>Price (₱)</label><input type="number" id="f_price" placeholder="1758000"></div>
+      <div class="form-field">
+        <label>Transmission</label>
+        <select id="f_transmission"><option>Automatic</option><option>Manual</option></select>
+      </div>
+      <div class="form-field">
+        <label>Fuel Type</label>
+        <select id="f_fuel"><option>Gasoline</option><option>Diesel</option><option>Electric</option><option>Hybrid</option></select>
+      </div>
+      <div class="form-field"><label>Mileage (kms)</label><input type="number" id="f_mileage" placeholder="35000"></div>
+      <div class="form-field">
+        <label>Body Icon (fallback if no photo)</label>
+        <select id="f_icon"><option value="suv">SUV</option><option value="muscle">Sports/Muscle</option><option value="mpv">MPV/Van</option><option value="pickup">Pickup/Truck</option></select>
+      </div>
+
+      <div class="form-field span-2"><label>Details / Features — one per line</label><textarea id="f_features" placeholder="Four Wheel Drive (4WD)&#10;Turbo V6 Gasoline Engine&#10;No Flood History"></textarea></div>
+      <div class="form-field span-2"><label>Modifications / Loads — one per line (optional)</label><textarea id="f_modifications" placeholder="ARB Steel Roof Rack&#10;Safari Snorkel"></textarea></div>
+
+      <div class="form-field span-2">
+        <label>Financing (optional)</label>
+        <input type="text" id="f_finDown" placeholder="Downpayment, e.g. ₱251,400 (30%)" style="margin-bottom:10px;">
+        <div id="finRows"></div>
+        <button type="button" class="mini-btn" id="addFinRow">+ Add Term Row</button>
+      </div>
+
+      <div class="form-field span-2">
+        <label>Photos (up to 12)</label>
+        <div class="photo-grid" id="photoGrid"></div>
+        <div class="upload-drop" id="uploadDrop">Click to choose photos, or drag them here</div>
+        <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+      </div>
+    </div>
+
+    <div class="status-msg" id="formStatus"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" id="cancelBtn" type="button">Cancel</button>
+      <button class="btn btn-fill" id="saveBtn" type="button">Save Vehicle</button>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { firebaseConfig } from "./firebase-config.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+import {
+  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, arrayRemove
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import {
+  getStorage, ref, uploadBytes, getDownloadURL, deleteObject
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+const MAX_PHOTOS = 12;
+let vehicles = [];
+let editingId = null;
+let pendingPhotos = [];   // existing download URLs kept
+let pendingFiles = [];    // new File objects to upload on save
+
+/* ---------------- Auth ---------------- */
+document.getElementById("loginBtn").addEventListener("click", async ()=>{
+  const email = document.getElementById("loginEmail").value.trim();
+  const pass = document.getElementById("loginPassword").value;
+  const errEl = document.getElementById("loginErr");
+  errEl.textContent = "";
+  try{
+    await signInWithEmailAndPassword(auth, email, pass);
+  }catch(err){
+    errEl.textContent = "Login failed — check your email and password.";
+    console.error(err);
+  }
+});
+
+document.getElementById("logoutBtn").addEventListener("click", ()=>signOut(auth));
+
+onAuthStateChanged(auth, user=>{
+  if(user){
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("adminApp").style.display = "block";
+    document.getElementById("whoAmI").textContent = user.email;
+    startListening();
+  } else {
+    document.getElementById("loginScreen").style.display = "flex";
+    document.getElementById("adminApp").style.display = "none";
+  }
+});
+
+/* ---------------- Live vehicle list ---------------- */
+function startListening(){
+  const q = query(collection(db, "vehicles"), orderBy("year", "desc"));
+  onSnapshot(q, snap=>{
+    vehicles = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    renderRows();
+  }, err=>{
+    document.getElementById("vehicleRows").innerHTML =
+      `<tr><td colspan="6" style="color:var(--red); padding:20px;">Couldn't load vehicles: ${err.message}</td></tr>`;
+  });
+}
+
+function peso(n){ return "₱" + Number(n||0).toLocaleString("en-PH"); }
+
+function renderRows(){
+  const tbody = document.getElementById("vehicleRows");
+  if(!vehicles.length){
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--silver); padding:30px;">No vehicles yet — click "Add Vehicle" to create your first listing.</td></tr>`;
+    return;
+  }
+  tbody.innerHTML = vehicles.map(v=>`
+    <tr>
+      <td>${v.photos && v.photos.length ? `<img src="${v.photos[0]}">` : "—"}</td>
+      <td>${v.name||""}</td>
+      <td>${v.brand||""}</td>
+      <td>${peso(v.price)}</td>
+      <td>${v.year||""}</td>
+      <td>
+        <div class="row-actions">
+          <button class="mini-btn" data-edit="${v.id}">Edit</button>
+          <button class="mini-btn danger" data-delete="${v.id}">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join("");
+}
+
+document.getElementById("vehicleRows").addEventListener("click", e=>{
+  const editBtn = e.target.closest("[data-edit]");
+  const delBtn = e.target.closest("[data-delete]");
+  if(editBtn) openForm(editBtn.dataset.edit);
+  if(delBtn) deleteVehicle(delBtn.dataset.delete);
+});
+
+async function deleteVehicle(id){
+  const v = vehicles.find(x=>x.id===id);
+  if(!confirm(`Delete "${v ? v.name : 'this vehicle'}"? This can't be undone.`)) return;
+  try{
+    // best-effort: remove stored photos too
+    if(v && v.photos){
+      for(const url of v.photos){
+        try{
+          const path = decodeURIComponent(url.split("/o/")[1].split("?")[0]);
+          await deleteObject(ref(storage, path));
+        }catch(e){ /* ignore individual cleanup failures */ }
+      }
+    }
+    await deleteDoc(doc(db, "vehicles", id));
+  }catch(err){
+    alert("Couldn't delete: " + err.message);
+  }
+}
+
+/* ---------------- Add/Edit modal ---------------- */
+const modal = document.getElementById("formModal");
+document.getElementById("addVehicleBtn").addEventListener("click", ()=>openForm(null));
+document.getElementById("cancelBtn").addEventListener("click", closeForm);
+
+function openForm(id){
+  editingId = id;
+  const v = id ? vehicles.find(x=>x.id===id) : null;
+  document.getElementById("modalTitle").textContent = id ? "Edit Vehicle" : "Add Vehicle";
+  document.getElementById("f_brand").value = v?.brand || "";
+  document.getElementById("f_name").value = v?.name || "";
+  document.getElementById("f_year").value = v?.year || "";
+  document.getElementById("f_price").value = v?.price || "";
+  document.getElementById("f_transmission").value = v?.transmission || "Automatic";
+  document.getElementById("f_fuel").value = v?.fuel || "Gasoline";
+  document.getElementById("f_mileage").value = v?.mileage || "";
+  document.getElementById("f_icon").value = v?.icon || "suv";
+  document.getElementById("f_features").value = (v?.features || []).join("\n");
+  document.getElementById("f_modifications").value = (v?.modifications || []).join("\n");
+  document.getElementById("f_finDown").value = v?.financing?.down || "";
+
+  document.getElementById("finRows").innerHTML = "";
+  (v?.financing?.terms || []).forEach(t=>addFinRow(t[0], t[1]));
+
+  pendingPhotos = (v?.photos || []).slice();
+  pendingFiles = [];
+  renderPhotoGrid();
+  document.getElementById("formStatus").textContent = "";
+  document.getElementById("formStatus").className = "status-msg";
+  modal.classList.add("open");
+}
+function closeForm(){ modal.classList.remove("open"); }
+
+function addFinRow(label="", amount=""){
+  const row = document.createElement("div");
+  row.className = "fin-row";
+  row.innerHTML = `
+    <input type="text" placeholder="e.g. 24 Months" value="${label}">
+    <input type="text" placeholder="e.g. ₱32,882" value="${amount}">
+    <button type="button" class="mini-btn danger">✕</button>
+  `;
+  row.querySelector("button").addEventListener("click", ()=>row.remove());
+  document.getElementById("finRows").appendChild(row);
+}
+document.getElementById("addFinRow").addEventListener("click", ()=>addFinRow());
+
+/* ---------------- Photo handling ---------------- */
+function renderPhotoGrid(){
+  const grid = document.getElementById("photoGrid");
+  const items = [
+    ...pendingPhotos.map((url,i)=>({type:"existing", url, i})),
+    ...pendingFiles.map((file,i)=>({type:"new", url:URL.createObjectURL(file), i}))
+  ];
+  grid.innerHTML = items.map(item=>`
+    <div class="photo-thumb">
+      <img src="${item.url}">
+      <button class="rm" data-type="${item.type}" data-i="${item.i}">✕</button>
+    </div>
+  `).join("");
+  document.getElementById("uploadDrop").textContent =
+    items.length >= MAX_PHOTOS ? `Maximum ${MAX_PHOTOS} photos reached` : `Click to choose photos, or drag them here (${items.length}/${MAX_PHOTOS})`;
+}
+document.getElementById("photoGrid").addEventListener("click", e=>{
+  const btn = e.target.closest(".rm");
+  if(!btn) return;
+  if(btn.dataset.type === "existing") pendingPhotos.splice(Number(btn.dataset.i), 1);
+  else pendingFiles.splice(Number(btn.dataset.i), 1);
+  renderPhotoGrid();
+});
+
+const uploadDrop = document.getElementById("uploadDrop");
+const fileInput = document.getElementById("fileInput");
+uploadDrop.addEventListener("click", ()=>fileInput.click());
+uploadDrop.addEventListener("dragover", e=>{ e.preventDefault(); uploadDrop.style.borderColor="var(--red)"; });
+uploadDrop.addEventListener("dragleave", ()=>{ uploadDrop.style.borderColor=""; });
+uploadDrop.addEventListener("drop", e=>{
+  e.preventDefault(); uploadDrop.style.borderColor="";
+  handleNewFiles([...e.dataTransfer.files]);
+});
+fileInput.addEventListener("change", ()=>{
+  handleNewFiles([...fileInput.files]);
+  fileInput.value = "";
+});
+function handleNewFiles(files){
+  const room = MAX_PHOTOS - (pendingPhotos.length + pendingFiles.length);
+  if(room <= 0){ alert(`You already have ${MAX_PHOTOS} photos on this listing.`); return; }
+  pendingFiles.push(...files.filter(f=>f.type.startsWith("image/")).slice(0, room));
+  renderPhotoGrid();
+}
+
+// Resize/compress an image file client-side before upload (keeps Storage usage low)
+function resizeImage(file, maxDim=1000, quality=0.82){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    const reader = new FileReader();
+    reader.onload = e=>{ img.src = e.target.result; };
+    reader.onerror = reject;
+    img.onload = ()=>{
+      let { width, height } = img;
+      if(width > height && width > maxDim){ height = Math.round(height * maxDim / width); width = maxDim; }
+      else if(height > maxDim){ width = Math.round(width * maxDim / height); height = maxDim; }
+      const canvas = document.createElement("canvas");
+      canvas.width = width; canvas.height = height;
+      canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+      canvas.toBlob(blob=>resolve(blob), "image/jpeg", quality);
+    };
+    img.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ---------------- Save ---------------- */
+document.getElementById("saveBtn").addEventListener("click", saveVehicle);
+
+async function saveVehicle(){
+  const statusEl = document.getElementById("formStatus");
+  const saveBtn = document.getElementById("saveBtn");
+  const name = document.getElementById("f_name").value.trim();
+  const price = Number(document.getElementById("f_price").value);
+  if(!name || !price){
+    statusEl.textContent = "Name and price are required.";
+    statusEl.className = "status-msg err";
+    return;
+  }
+
+  saveBtn.disabled = true;
+  statusEl.className = "status-msg";
+  statusEl.textContent = "Saving…";
+
+  const finTerms = [...document.getElementById("finRows").children].map(row=>{
+    const [labelInput, amountInput] = row.querySelectorAll("input");
+    return [labelInput.value.trim(), amountInput.value.trim()];
+  }).filter(t=>t[0] && t[1]);
+
+  const payload = {
+    brand: document.getElementById("f_brand").value.trim(),
+    name,
+    year: Number(document.getElementById("f_year").value) || null,
+    price,
+    transmission: document.getElementById("f_transmission").value,
+    fuel: document.getElementById("f_fuel").value,
+    mileage: Number(document.getElementById("f_mileage").value) || 0,
+    icon: document.getElementById("f_icon").value,
+    features: document.getElementById("f_features").value.split("\n").map(s=>s.trim()).filter(Boolean),
+    modifications: document.getElementById("f_modifications").value.split("\n").map(s=>s.trim()).filter(Boolean),
+    financing: finTerms.length ? { down: document.getElementById("f_finDown").value.trim(), terms: finTerms } : null,
+    updatedAt: Date.now()
+  };
+
+  try{
+    let id = editingId;
+    if(!id){
+      const docRef = await addDoc(collection(db, "vehicles"), { ...payload, photos: pendingPhotos, createdAt: Date.now() });
+      id = docRef.id;
+    } else {
+      await updateDoc(doc(db, "vehicles", id), payload);
+    }
+
+    // Upload any newly added photo files
+    const uploadedUrls = [];
+    for(let i=0; i<pendingFiles.length; i++){
+      statusEl.textContent = `Uploading photo ${i+1} of ${pendingFiles.length}…`;
+      const blob = await resizeImage(pendingFiles[i]);
+      const path = `vehicles/${id}/${Date.now()}-${i}.jpg`;
+      const storageRef = ref(storage, path);
+      await uploadBytes(storageRef, blob, { contentType: "image/jpeg" });
+      const url = await getDownloadURL(storageRef);
+      uploadedUrls.push(url);
+    }
+
+    const finalPhotos = [...pendingPhotos, ...uploadedUrls].slice(0, MAX_PHOTOS);
+    await updateDoc(doc(db, "vehicles", id), { photos: finalPhotos });
+
+    statusEl.textContent = "Saved.";
+    statusEl.className = "status-msg ok";
+    setTimeout(closeForm, 500);
+  }catch(err){
+    console.error(err);
+    statusEl.textContent = "Error saving: " + err.message;
+    statusEl.className = "status-msg err";
+  }finally{
+    saveBtn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
