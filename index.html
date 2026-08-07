@@ -6,6 +6,7 @@
 <title>GMN CAR TRADING — Premium Pre-Owned Vehicles</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <style>
   :root{
     --black-deep:#0B0B0B;
@@ -442,16 +443,16 @@
     <div class="contact-grid">
       <div>
         <form id="inquiryForm">
-          <div class="form-field"><label>Name</label><input type="text" required></div>
-          <div class="form-field"><label>Email</label><input type="email" required></div>
-          <div class="form-field"><label>Phone Number</label><input type="tel" required></div>
+          <div class="form-field"><label>Name</label><input type="text" id="inqName" required></div>
+          <div class="form-field"><label>Email</label><input type="email" id="inqEmail" required></div>
+          <div class="form-field"><label>Phone Number</label><input type="tel" id="inqPhone" required></div>
           <div class="form-field">
             <label>Vehicle Interested In</label>
             <select id="vehicleInterest"><option value="">General Inquiry</option></select>
           </div>
-          <div class="form-field"><label>Message</label><textarea placeholder="Tell us what you're looking for..."></textarea></div>
-          <button type="submit" class="submit-btn">Send Inquiry</button>
-          <p class="form-note" id="formNote">This form is a UI demo — connect it to email or a backend service to receive submissions.</p>
+          <div class="form-field"><label>Message</label><textarea id="inqMessage" placeholder="Tell us what you're looking for..."></textarea></div>
+          <button type="submit" class="submit-btn" id="inqSubmitBtn">Send Inquiry</button>
+          <p class="form-note" id="formNote"></p>
         </form>
       </div>
       <div>
@@ -520,7 +521,7 @@
 <script type="module">
 import { firebaseConfig } from "./firebase-config.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot, query, orderBy, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
 let vehicles = [];
 let dbReady = false;
@@ -719,9 +720,50 @@ document.getElementById("navToggle").addEventListener("click", ()=>{
   document.getElementById(id).addEventListener("input", applyFilters);
 });
 
-document.getElementById("inquiryForm").addEventListener("submit", e=>{
+emailjs.init({ publicKey: "ZlQGrCG9Lu2jHrGyP" });
+
+document.getElementById("inquiryForm").addEventListener("submit", async e=>{
   e.preventDefault();
-  document.getElementById("formNote").textContent = "Thanks — this demo form isn't wired to a backend yet, so nothing was actually sent. Connect it to email or a form service to go live.";
+  const btn = document.getElementById("inqSubmitBtn");
+  const note = document.getElementById("formNote");
+  const name = document.getElementById("inqName").value.trim();
+  const email = document.getElementById("inqEmail").value.trim();
+  const phone = document.getElementById("inqPhone").value.trim();
+  const vehicle = document.getElementById("vehicleInterest").selectedOptions[0]?.textContent || "General Inquiry";
+  const message = document.getElementById("inqMessage").value.trim();
+
+  btn.disabled = true;
+  btn.textContent = "Sending...";
+  note.style.color = "";
+  note.textContent = "";
+
+  try{
+    await emailjs.send("service_kml5h47", "template_lu01l5p", {
+      name, email, phone, vehicle, message,
+      title: `Inquiry from ${name}`
+    });
+
+    if(db){
+      try{
+        await addDoc(collection(db, "leads"), {
+          name, email, phone, vehicle, message,
+          createdAt: serverTimestamp(),
+          read: false
+        });
+      }catch(leadErr){ console.error("Lead save failed:", leadErr); }
+    }
+
+    note.style.color = "#7CD98A";
+    note.textContent = "Thanks! Your inquiry has been sent — we'll get back to you soon.";
+    document.getElementById("inquiryForm").reset();
+  }catch(err){
+    console.error(err);
+    note.style.color = "var(--red)";
+    note.textContent = "Something went wrong sending your inquiry. Please call or message us directly instead.";
+  }finally{
+    btn.disabled = false;
+    btn.textContent = "Send Inquiry";
+  }
 });
 
 /* ---------------- Lightbox ---------------- */
@@ -753,9 +795,10 @@ document.addEventListener("keydown", e=>{
 /* ---------------- Firebase live data ---------------- */
 document.getElementById("year").textContent = new Date().getFullYear();
 
+let db;
 try{
   const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  db = getFirestore(app);
   const q = query(collection(db, "vehicles"), orderBy("year", "desc"));
   onSnapshot(q, snap=>{
     vehicles = snap.docs.map(d=>({ id:d.id, ...d.data() }));
