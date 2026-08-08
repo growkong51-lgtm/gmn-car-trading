@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+
+Sitemap: https://growkong51-lgtm.github.io/gmn-car-trading/sitemap.xml
