@@ -299,11 +299,11 @@
   .calc-box .calc-sub{ color:var(--silver); font-size:13px; margin-bottom:22px; }
   .calc-grid{ display:grid; grid-template-columns:1fr; gap:16px; margin-bottom:22px; }
   .calc-field label{ display:block; color:var(--silver); font-size:11px; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; }
-  .calc-field input{
+  .calc-field input, .calc-field select{
     width:100%; background:var(--black-deep); border:1px solid var(--line); color:var(--white);
     padding:12px 14px; font-size:15px; font-family:'Inter',sans-serif;
   }
-  .calc-field input:focus{ outline:none; border-color:var(--red); }
+  .calc-field input:focus, .calc-field select:focus{ outline:none; border-color:var(--red); }
   .calc-result{
     background:var(--black-deep); border:1px solid var(--red); padding:20px; text-align:center;
   }
@@ -496,19 +496,20 @@
         </div>
         <div class="calc-field">
           <label>Term (months)</label>
-          <input type="number" id="calcTerm" placeholder="e.g. 36" inputmode="numeric" value="36">
+          <select id="calcTerm">
+            <option value="12">12 Months</option>
+            <option value="24">24 Months</option>
+            <option value="36" selected>36 Months</option>
+            <option value="48">48 Months</option>
+          </select>
         </div>
-      </div>
-      <div class="calc-field" style="max-width:220px; margin-bottom:22px;">
-        <label>Interest Rate (% per year)</label>
-        <input type="number" id="calcRate" placeholder="e.g. 12" inputmode="decimal" value="12">
       </div>
       <div class="calc-result">
         <div class="calc-label">Estimated Monthly Payment</div>
         <div class="calc-monthly" id="calcMonthly">₱0</div>
         <div class="calc-label" id="calcBreakdown">Downpayment: ₱0 · Loan Amount: ₱0</div>
       </div>
-      <p class="calc-note">This is a rough estimate only — actual rates, fees, and approval depend on the bank or financing partner. Contact us for an exact quote.</p>
+      <p class="calc-note"><strong>Important Notice:</strong> The financing figures shown are for estimated financing purposes only and are not the final or official financing computation. Actual monthly amortization may vary depending on the client's approved financing terms. For an exact financing computation, please contact us or email us for assistance.</p>
     </div>
 
     <div class="grid" id="financingGrid"><div class="loading-row"><div class="spinner"></div>Loading…</div></div>
@@ -838,11 +839,14 @@ document.getElementById("navToggle").addEventListener("click", ()=>{
 emailjs.init({ publicKey: "ZlQGrCG9Lu2jHrGyP" });
 
 /* ---------------- Financing Calculator ---------------- */
+// Base interest rates by term — not shown to clients, estimate only.
+const BASE_RATES = { 12: 13.73, 24: 16.98, 36: 14.98, 48: 14.32 };
+
 function runCalc(){
   const price = parseFloat(document.getElementById("calcPrice").value) || 0;
   const downPct = parseFloat(document.getElementById("calcDownPct").value) || 0;
   const termMonths = parseInt(document.getElementById("calcTerm").value) || 0;
-  const annualRate = parseFloat(document.getElementById("calcRate").value) || 0;
+  const annualRate = BASE_RATES[termMonths] || 0;
 
   const downAmount = price * (downPct / 100);
   const loanAmount = Math.max(price - downAmount, 0);
@@ -859,8 +863,9 @@ function runCalc(){
   document.getElementById("calcBreakdown").textContent =
     `Downpayment: ${peso(Math.round(downAmount))} · Loan Amount: ${peso(Math.round(loanAmount))}`;
 }
-["calcPrice","calcDownPct","calcTerm","calcRate"].forEach(id=>{
+["calcPrice","calcDownPct","calcTerm"].forEach(id=>{
   document.getElementById(id).addEventListener("input", runCalc);
+  document.getElementById(id).addEventListener("change", runCalc);
 });
 
 document.getElementById("inquiryForm").addEventListener("submit", async e=>{
