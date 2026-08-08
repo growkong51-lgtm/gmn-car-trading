@@ -333,6 +333,8 @@
   }
   .lead-row.unread td{ color:var(--white); font-weight:600; }
   .lead-msg{ max-width:220px; white-space:normal; word-break:break-word; color:var(--silver); font-size:12.5px; }
+  .sold-tag{ background:var(--red); color:var(--white); font-size:10px; font-weight:700; letter-spacing:0.05em; padding:3px 8px; text-transform:uppercase; }
+  .avail-tag{ background:rgba(60,180,90,0.15); color:#7CD98A; font-size:10px; font-weight:700; letter-spacing:0.05em; padding:3px 8px; text-transform:uppercase; }
   .table-wrap{ overflow-x:auto; border:1px solid var(--line); }
   table.veh-table{ width:100%; border-collapse:collapse; font-size:13px; min-width:720px; }
   table.veh-table th, table.veh-table td{ text-align:left; padding:12px 14px; border-bottom:1px solid var(--line); }
@@ -429,7 +431,7 @@
       <div class="table-wrap">
         <table class="veh-table">
           <thead>
-            <tr><th>Photo</th><th>Name</th><th>Brand</th><th>Price</th><th>Year</th><th>Actions</th></tr>
+            <tr><th>Photo</th><th>Name</th><th>Brand</th><th>Price</th><th>Year</th><th>Status</th><th>Actions</th></tr>
           </thead>
           <tbody id="vehicleRows">
             <tr><td colspan="6" style="text-align:center; color:var(--silver); padding:30px;">Loading…</td></tr>
@@ -595,19 +597,21 @@ function peso(n){ return "₱" + Number(n||0).toLocaleString("en-PH"); }
 function renderRows(){
   const tbody = document.getElementById("vehicleRows");
   if(!vehicles.length){
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--silver); padding:30px;">No vehicles yet — click "Add Vehicle" to create your first listing.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--silver); padding:30px;">No vehicles yet — click "Add Vehicle" to create your first listing.</td></tr>`;
     return;
   }
   tbody.innerHTML = vehicles.map(v=>`
     <tr>
-      <td>${v.photos && v.photos.length ? `<img src="${v.photos[0]}">` : "—"}</td>
+      <td>${v.photos && v.photos.length ? `<img src="${v.photos[0]}" style="${v.sold?'opacity:0.4;':''}">` : "—"}</td>
       <td>${v.name||""}</td>
       <td>${v.brand||""}</td>
       <td>${peso(v.price)}</td>
       <td>${v.year||""}</td>
+      <td>${v.sold ? '<span class="sold-tag">SOLD</span>' : '<span class="avail-tag">Available</span>'}</td>
       <td>
         <div class="row-actions">
           <button class="mini-btn" data-edit="${v.id}">Edit</button>
+          <button class="mini-btn" data-toggle-sold="${v.id}">${v.sold ? "Mark Available" : "Mark Sold"}</button>
           <button class="mini-btn danger" data-delete="${v.id}">Delete</button>
         </div>
       </td>
@@ -697,9 +701,21 @@ document.getElementById("leadRows").addEventListener("click", async e=>{
 document.getElementById("vehicleRows").addEventListener("click", e=>{
   const editBtn = e.target.closest("[data-edit]");
   const delBtn = e.target.closest("[data-delete]");
+  const soldBtn = e.target.closest("[data-toggle-sold]");
   if(editBtn) openForm(editBtn.dataset.edit);
   if(delBtn) deleteVehicle(delBtn.dataset.delete);
+  if(soldBtn) toggleSold(soldBtn.dataset.toggleSold);
 });
+
+async function toggleSold(id){
+  const v = vehicles.find(x=>x.id===id);
+  if(!v) return;
+  try{
+    await updateDoc(doc(db, "vehicles", id), { sold: !v.sold });
+  }catch(err){
+    alert("Couldn't update status: " + err.message);
+  }
+}
 
 async function deleteVehicle(id){
   const v = vehicles.find(x=>x.id===id);
