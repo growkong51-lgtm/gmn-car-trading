@@ -310,6 +310,12 @@
   .calc-result .calc-monthly{ font-family:'Bebas Neue',sans-serif; font-size:40px; color:var(--red); line-height:1; margin:6px 0; }
   .calc-result .calc-label{ color:var(--silver); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
   .calc-note{ color:var(--silver); font-size:11.5px; margin-top:14px; line-height:1.6; }
+  .calc-tabs{ display:flex; gap:8px; }
+  .calc-tab{
+    flex:1; background:var(--black-deep); border:1px solid var(--line); color:var(--silver);
+    padding:11px 10px; font-size:12.5px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;
+  }
+  .calc-tab.active{ border-color:var(--red); color:var(--white); background:rgba(225,6,0,0.12); }
   @media(min-width:640px){ .calc-grid{ grid-template-columns:1fr 1fr 1fr; } }
 
   .sticky-inquire{
@@ -491,10 +497,6 @@
           <input type="number" id="calcPrice" placeholder="e.g. 838000" inputmode="numeric">
         </div>
         <div class="calc-field">
-          <label>Downpayment (%)</label>
-          <input type="number" id="calcDownPct" placeholder="e.g. 30" inputmode="numeric" value="30">
-        </div>
-        <div class="calc-field">
           <label>Term (months)</label>
           <select id="calcTerm">
             <option value="12">12 Months</option>
@@ -504,6 +506,34 @@
           </select>
         </div>
       </div>
+
+      <div class="calc-field" style="margin-bottom:16px;">
+        <label>Downpayment</label>
+        <div class="calc-tabs">
+          <button type="button" class="calc-tab active" id="tabStandard">Standard %</button>
+          <button type="button" class="calc-tab" id="tabFlexible">Flexible Amount</button>
+        </div>
+      </div>
+
+      <div class="calc-grid" id="standardDownWrap">
+        <div class="calc-field">
+          <label>Downpayment Percentage</label>
+          <select id="calcDownPct">
+            <option value="10">10%</option>
+            <option value="20">20%</option>
+            <option value="30" selected>30%</option>
+            <option value="40">40%</option>
+            <option value="50">50%</option>
+          </select>
+        </div>
+      </div>
+      <div class="calc-grid" id="flexibleDownWrap" style="display:none;">
+        <div class="calc-field">
+          <label>Downpayment Amount (₱)</label>
+          <input type="number" id="calcDownAmount" placeholder="e.g. 150000" inputmode="numeric">
+        </div>
+      </div>
+
       <div class="calc-result">
         <div class="calc-label">Estimated Monthly Payment</div>
         <div class="calc-monthly" id="calcMonthly">₱0</div>
@@ -841,14 +871,37 @@ emailjs.init({ publicKey: "ZlQGrCG9Lu2jHrGyP" });
 /* ---------------- Financing Calculator ---------------- */
 // Base interest rates by term — not shown to clients, estimate only.
 const BASE_RATES = { 12: 13.73, 24: 16.98, 36: 14.98, 48: 14.32 };
+let downMode = "standard"; // "standard" or "flexible"
+
+document.getElementById("tabStandard").addEventListener("click", ()=>{
+  downMode = "standard";
+  document.getElementById("tabStandard").classList.add("active");
+  document.getElementById("tabFlexible").classList.remove("active");
+  document.getElementById("standardDownWrap").style.display = "";
+  document.getElementById("flexibleDownWrap").style.display = "none";
+  runCalc();
+});
+document.getElementById("tabFlexible").addEventListener("click", ()=>{
+  downMode = "flexible";
+  document.getElementById("tabFlexible").classList.add("active");
+  document.getElementById("tabStandard").classList.remove("active");
+  document.getElementById("flexibleDownWrap").style.display = "";
+  document.getElementById("standardDownWrap").style.display = "none";
+  runCalc();
+});
 
 function runCalc(){
   const price = parseFloat(document.getElementById("calcPrice").value) || 0;
-  const downPct = parseFloat(document.getElementById("calcDownPct").value) || 0;
   const termMonths = parseInt(document.getElementById("calcTerm").value) || 0;
   const annualRate = BASE_RATES[termMonths] || 0;
 
-  const downAmount = price * (downPct / 100);
+  let downAmount = 0;
+  if(downMode === "standard"){
+    const downPct = parseFloat(document.getElementById("calcDownPct").value) || 0;
+    downAmount = price * (downPct / 100);
+  }else{
+    downAmount = parseFloat(document.getElementById("calcDownAmount").value) || 0;
+  }
   const loanAmount = Math.max(price - downAmount, 0);
 
   // Flat rate: interest is calculated on the full loan amount for the whole term.
@@ -862,7 +915,7 @@ function runCalc(){
   document.getElementById("calcBreakdown").textContent =
     `Downpayment: ${peso(Math.round(downAmount))} · Loan Amount: ${peso(Math.round(loanAmount))}`;
 }
-["calcPrice","calcDownPct","calcTerm"].forEach(id=>{
+["calcPrice","calcDownPct","calcTerm","calcDownAmount"].forEach(id=>{
   document.getElementById(id).addEventListener("input", runCalc);
   document.getElementById(id).addEventListener("change", runCalc);
 });
