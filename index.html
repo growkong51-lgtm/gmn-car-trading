@@ -850,13 +850,12 @@ function runCalc(){
 
   const downAmount = price * (downPct / 100);
   const loanAmount = Math.max(price - downAmount, 0);
-  const monthlyRate = (annualRate / 100) / 12;
 
+  // Flat rate: interest is calculated on the full loan amount for the whole term.
   let monthly = 0;
   if(loanAmount > 0 && termMonths > 0){
-    monthly = monthlyRate > 0
-      ? loanAmount * monthlyRate * Math.pow(1+monthlyRate, termMonths) / (Math.pow(1+monthlyRate, termMonths) - 1)
-      : loanAmount / termMonths;
+    const totalInterest = loanAmount * (annualRate / 100) * (termMonths / 12);
+    monthly = (loanAmount + totalInterest) / termMonths;
   }
 
   document.getElementById("calcMonthly").textContent = peso(Math.round(monthly));
