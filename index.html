@@ -292,6 +292,25 @@
   table.financing th, table.financing td{ text-align:left; padding:10px 8px; border-bottom:1px solid var(--line); color:var(--silver); }
   table.financing th{ color:var(--white); text-transform:uppercase; font-size:11px; letter-spacing:0.08em; }
   table.financing td:last-child, table.financing th:last-child{ text-align:right; color:var(--white); }
+  .calc-box{
+    background:var(--black-card); border:1px solid var(--line); padding:28px 22px; margin-bottom:40px;
+  }
+  .calc-box h3{ font-family:'Bebas Neue',sans-serif; font-size:24px; margin-bottom:6px; letter-spacing:0.02em; }
+  .calc-box .calc-sub{ color:var(--silver); font-size:13px; margin-bottom:22px; }
+  .calc-grid{ display:grid; grid-template-columns:1fr; gap:16px; margin-bottom:22px; }
+  .calc-field label{ display:block; color:var(--silver); font-size:11px; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; }
+  .calc-field input{
+    width:100%; background:var(--black-deep); border:1px solid var(--line); color:var(--white);
+    padding:12px 14px; font-size:15px; font-family:'Inter',sans-serif;
+  }
+  .calc-field input:focus{ outline:none; border-color:var(--red); }
+  .calc-result{
+    background:var(--black-deep); border:1px solid var(--red); padding:20px; text-align:center;
+  }
+  .calc-result .calc-monthly{ font-family:'Bebas Neue',sans-serif; font-size:40px; color:var(--red); line-height:1; margin:6px 0; }
+  .calc-result .calc-label{ color:var(--silver); font-size:11px; text-transform:uppercase; letter-spacing:0.08em; }
+  .calc-note{ color:var(--silver); font-size:11.5px; margin-top:14px; line-height:1.6; }
+  @media(min-width:640px){ .calc-grid{ grid-template-columns:1fr 1fr 1fr; } }
 
   .sticky-inquire{
     position:sticky; bottom:0; margin-top:36px; background:var(--black-matte); border:1px solid var(--line);
@@ -462,6 +481,36 @@
     <p style="color:var(--silver); max-width:640px; line-height:1.8; margin-bottom:36px; font-size:14.5px;">
       Select vehicles are available with in-house installment plans. Terms shown on each vehicle's page are estimates based on a 30% downpayment — final approval and rates depend on bank partner and buyer requirements. Reach out and our team will walk you through the paperwork.
     </p>
+
+    <div class="calc-box">
+      <h3>Monthly Payment Calculator</h3>
+      <p class="calc-sub">Get a quick estimate — adjust the numbers to fit your budget.</p>
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label>Vehicle Price (₱)</label>
+          <input type="number" id="calcPrice" placeholder="e.g. 838000" inputmode="numeric">
+        </div>
+        <div class="calc-field">
+          <label>Downpayment (%)</label>
+          <input type="number" id="calcDownPct" placeholder="e.g. 30" inputmode="numeric" value="30">
+        </div>
+        <div class="calc-field">
+          <label>Term (months)</label>
+          <input type="number" id="calcTerm" placeholder="e.g. 36" inputmode="numeric" value="36">
+        </div>
+      </div>
+      <div class="calc-field" style="max-width:220px; margin-bottom:22px;">
+        <label>Interest Rate (% per year)</label>
+        <input type="number" id="calcRate" placeholder="e.g. 12" inputmode="decimal" value="12">
+      </div>
+      <div class="calc-result">
+        <div class="calc-label">Estimated Monthly Payment</div>
+        <div class="calc-monthly" id="calcMonthly">₱0</div>
+        <div class="calc-label" id="calcBreakdown">Downpayment: ₱0 · Loan Amount: ₱0</div>
+      </div>
+      <p class="calc-note">This is a rough estimate only — actual rates, fees, and approval depend on the bank or financing partner. Contact us for an exact quote.</p>
+    </div>
+
     <div class="grid" id="financingGrid"><div class="loading-row"><div class="spinner"></div>Loading…</div></div>
   </section>
 </div>
@@ -787,6 +836,32 @@ document.getElementById("navToggle").addEventListener("click", ()=>{
 });
 
 emailjs.init({ publicKey: "ZlQGrCG9Lu2jHrGyP" });
+
+/* ---------------- Financing Calculator ---------------- */
+function runCalc(){
+  const price = parseFloat(document.getElementById("calcPrice").value) || 0;
+  const downPct = parseFloat(document.getElementById("calcDownPct").value) || 0;
+  const termMonths = parseInt(document.getElementById("calcTerm").value) || 0;
+  const annualRate = parseFloat(document.getElementById("calcRate").value) || 0;
+
+  const downAmount = price * (downPct / 100);
+  const loanAmount = Math.max(price - downAmount, 0);
+  const monthlyRate = (annualRate / 100) / 12;
+
+  let monthly = 0;
+  if(loanAmount > 0 && termMonths > 0){
+    monthly = monthlyRate > 0
+      ? loanAmount * monthlyRate * Math.pow(1+monthlyRate, termMonths) / (Math.pow(1+monthlyRate, termMonths) - 1)
+      : loanAmount / termMonths;
+  }
+
+  document.getElementById("calcMonthly").textContent = peso(Math.round(monthly));
+  document.getElementById("calcBreakdown").textContent =
+    `Downpayment: ${peso(Math.round(downAmount))} · Loan Amount: ${peso(Math.round(loanAmount))}`;
+}
+["calcPrice","calcDownPct","calcTerm","calcRate"].forEach(id=>{
+  document.getElementById(id).addEventListener("input", runCalc);
+});
 
 document.getElementById("inquiryForm").addEventListener("submit", async e=>{
   e.preventDefault();
